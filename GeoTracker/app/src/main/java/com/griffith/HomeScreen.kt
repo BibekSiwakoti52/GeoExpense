@@ -13,18 +13,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.text.SimpleDateFormat
+import java.util.Date
 
-data class Expense(var title: String, var amount: Double, val location: String)
+data class Expense(var title: String, var amount: Double, val location: String, var date: Date)
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(currentLocation: String) {
     // State for expenses list with dummy data
     //TODO: Fetch real data
     var expenses by remember {
         mutableStateOf(
             listOf(
-                Expense("Groceries", 20.0, "Dublin"),
-                Expense("Rent", 500.0, "Dublin")
+                Expense("Groceries", 20.0, "Dublin", Date()),
+                Expense("Rent", 500.0, "Dublin", Date())
             )
         )
     }
@@ -59,7 +61,7 @@ fun HomeScreen() {
                 isEditing = false
                 expenseToEdit = null
             } else {
-                expenses = expenses + Expense(finalCategory, amount, "Dublin")
+                expenses = expenses + Expense(finalCategory, amount, currentLocation, Date())
             }
             expenseAmount = ""
             selectedCategory = "Other"
@@ -189,7 +191,7 @@ fun HomeScreen() {
                         }
                     }
                     1 -> {
-                        Location(location = "Dublin") //Using Dublin as dummy data here
+                        Location(location = currentLocation)
                     }
                     2 -> {
                         // Settings Tab
@@ -248,6 +250,8 @@ fun ExpenseItem(expense: Expense, onDelete: () -> Unit, onEdit: () -> Unit, text
                 color = Color.Red,
                 fontWeight = FontWeight.Bold
             )
+            Text(text = "Date: ${SimpleDateFormat.getDateInstance(SimpleDateFormat.MEDIUM).format(expense.date)}",
+                fontSize = 12.sp, color = Color.Gray)
             Text(text = "Location: ${expense.location}", fontSize = 12.sp, color = Color.Gray)
         }
         Row {
@@ -264,5 +268,5 @@ fun ExpenseItem(expense: Expense, onDelete: () -> Unit, onEdit: () -> Unit, text
 @Composable
 @Preview(showBackground = true)
 fun PreviewHomeScreen() {
-    HomeScreen()
+    HomeScreen("Dublin")
 }
