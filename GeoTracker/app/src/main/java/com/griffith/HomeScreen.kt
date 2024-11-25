@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.dp
 import com.griffith.components.SettingsTab
 import com.griffith.components.ExpenseItem
 import com.griffith.components.ExpenseInput
+import com.griffith.ui.theme.MyApplicationTheme // Import the theme
 import java.util.Date
 
 @Composable
@@ -37,61 +38,64 @@ fun HomeScreen(currentLocation: String) {
         }
     }
 
-    Scaffold { paddingValues ->
-        Column(modifier = Modifier.padding(paddingValues)) {
-            // Tab Row
-            TabRow(selectedTabIndex = selectedTab) {
-                Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 }) {
-                    Text("Expenses", modifier = Modifier.padding(16.dp))
-                }
-                Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 }) {
-                    Text("Location", modifier = Modifier.padding(16.dp))
-                }
-                Tab(selected = selectedTab == 2, onClick = { selectedTab = 2 }) {
-                    Text("Settings", modifier = Modifier.padding(16.dp))
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Display Content Based on Selected Tab
-            when (selectedTab) {
-                0 -> {
-                    // Expense Input Form
-                    ExpenseInput(
-                        expenseAmount = expenseAmount,
-                        selectedCategory = selectedCategory,
-                        customCategory = customCategory,
-                        onAmountChange = { expenseAmount = it },
-                        onCategoryChange = { selectedCategory = it },
-                        onCustomCategoryChange = { customCategory = it },
-                        onSave = { saveExpense() } // Pass saveExpense as callback
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // List of Expenses
-                    LazyColumn {
-                        items(expenses) { expense ->
-                            ExpenseItem(
-                                expense = expense,
-                                onDelete = { expenses = expenses - expense },
-                                onEdit = {
-                                    expenseAmount = expense.amount.toString()
-                                    selectedCategory = expense.title
-                                    customCategory = if (expense.title == "Other") expense.title else ""
-                                }
-                            )
-                        }
+    // Wrap the entire screen in MyApplicationTheme to apply the theme
+    MyApplicationTheme(darkTheme = isDarkMode) {
+        Scaffold { paddingValues ->
+            Column(modifier = Modifier.padding(paddingValues)) {
+                // Tab Row
+                TabRow(selectedTabIndex = selectedTab) {
+                    Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 }) {
+                        Text("Expenses", modifier = Modifier.padding(16.dp))
+                    }
+                    Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 }) {
+                        Text("Location", modifier = Modifier.padding(16.dp))
+                    }
+                    Tab(selected = selectedTab == 2, onClick = { selectedTab = 2 }) {
+                        Text("Settings", modifier = Modifier.padding(16.dp))
                     }
                 }
-                1 -> {
-                    // Future Location Tab
-                    Text("Location Tab Coming Soon!", Modifier.padding(16.dp))
-                }
-                2 -> {
-                    // Settings Tab
-                    SettingsTab(isDarkMode = isDarkMode, onDarkModeToggle = { isDarkMode = it })
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Display Content Based on Selected Tab
+                when (selectedTab) {
+                    0 -> {
+                        // Expense Input Form
+                        ExpenseInput(
+                            expenseAmount = expenseAmount,
+                            selectedCategory = selectedCategory,
+                            customCategory = customCategory,
+                            onAmountChange = { expenseAmount = it },
+                            onCategoryChange = { selectedCategory = it },
+                            onCustomCategoryChange = { customCategory = it },
+                            onSave = { saveExpense() } // Pass saveExpense as callback
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // List of Expenses
+                        LazyColumn {
+                            items(expenses) { expense ->
+                                ExpenseItem(
+                                    expense = expense,
+                                    onDelete = { expenses = expenses - expense },
+                                    onEdit = {
+                                        expenseAmount = expense.amount.toString()
+                                        selectedCategory = expense.title
+                                        customCategory = if (expense.title == "Other") expense.title else ""
+                                    }
+                                )
+                            }
+                        }
+                    }
+                    1 -> {
+                        // Future Location Tab
+                        Location(location = currentLocation)
+                    }
+                    2 -> {
+                        // Settings Tab
+                        SettingsTab(isDarkMode = isDarkMode, onDarkModeToggle = { isDarkMode = it })
+                    }
                 }
             }
         }
