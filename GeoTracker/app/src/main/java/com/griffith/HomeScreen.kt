@@ -65,8 +65,9 @@ fun HomeScreen(currentLocation: String) {
                 else -> true
             }
 
-            val categoryCondition = when {
-                selectedCategoryFilter == "All" -> true
+            val categoryCondition = when (selectedCategoryFilter) {
+                "All" -> true
+                "Other" -> expense.title !in listOf("Food", "Entertainment", "Transportation", "Shopping")
                 else -> expense.title == selectedCategoryFilter
             }
 
@@ -146,12 +147,12 @@ fun HomeScreen(currentLocation: String) {
                                     onDismissRequest = { expandedCategory = false }
                                 ) {
                                     listOf(
+                                        "All",
                                         "Food",
                                         "Entertainment",
                                         "Transportation",
                                         "Shopping",
                                         "Other",
-                                        "All"
                                     ).forEach { category ->
                                         DropdownMenuItem(
                                             text = { Text(category) },
