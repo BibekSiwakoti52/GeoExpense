@@ -59,4 +59,5 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.okhttp)
     implementation(libs.gson.v2101)
+    implementation(libs.material3)
 }

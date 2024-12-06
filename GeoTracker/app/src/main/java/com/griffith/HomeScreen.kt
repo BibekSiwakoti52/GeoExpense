@@ -25,13 +25,19 @@ fun HomeScreen(currentLocation: String) {
     val sharedPreferences: SharedPreferences =
         context.getSharedPreferences("expense_prefs", Context.MODE_PRIVATE)
 
+    val allExpenses by remember {
+        mutableStateOf(loadExpenses(sharedPreferences))
+    }
+
     var expenses by remember {
         mutableStateOf(loadExpenses(sharedPreferences))
     }
 
     var expenseAmount by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("Other") }
+    var selectedCategoryFilter by remember { mutableStateOf("All") }
     var customCategory by remember { mutableStateOf("") }
+    var selectedDateFilter by remember { mutableStateOf("All") }
     var selectedTab by remember { mutableStateOf(0) }
     var isDarkMode by remember { mutableStateOf(false) }
 
@@ -48,6 +54,25 @@ fun HomeScreen(currentLocation: String) {
             selectedCategory = "Other"
             customCategory = ""
         }
+    }
+
+    fun applyFilters() {
+        val filteredExpenses = allExpenses.filter { expense ->
+            val dateCondition = when (selectedDateFilter) {
+                "Last 1 Day" -> expense.date.after(Date(System.currentTimeMillis() - 24 * 60 * 60 * 1000))
+                "Last 7 Days" -> expense.date.after(Date(System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000))
+                "Last 15 Days" -> expense.date.after(Date(System.currentTimeMillis() - 15 * 24 * 60 * 60 * 1000))
+                else -> true
+            }
+
+            val categoryCondition = when {
+                selectedCategoryFilter == "All" -> true
+                else -> expense.title == selectedCategoryFilter
+            }
+
+            dateCondition && categoryCondition
+        }
+        expenses = filteredExpenses
     }
 
     MyApplicationTheme(darkTheme = isDarkMode) {
@@ -81,6 +106,67 @@ fun HomeScreen(currentLocation: String) {
 
                         Spacer(modifier = Modifier.height(16.dp))
 
+                        Row(modifier = Modifier.padding(16.dp)) {
+                            Column {
+                                var expandedDate by remember { mutableStateOf(false) }
+                                TextButton(onClick = { expandedDate = !expandedDate }) {
+                                    Text("Date: $selectedDateFilter")
+                                }
+                                DropdownMenu(
+                                    expanded = expandedDate,
+                                    onDismissRequest = { expandedDate = false }
+                                ) {
+                                    listOf(
+                                        "All",
+                                        "Last 1 Day",
+                                        "Last 7 Days",
+                                        "Last 15 Days"
+                                    ).forEach { filter ->
+                                        DropdownMenuItem(
+                                            text = { Text(filter) },
+                                            onClick = {
+                                                selectedDateFilter = filter
+                                                expandedDate = false
+                                                applyFilters()
+                                            },
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                            }
+                            Column {
+                                var expandedCategory by remember { mutableStateOf(false) }
+                                TextButton(onClick = { expandedCategory = !expandedCategory }) {
+                                    Text("Category: $selectedCategoryFilter")
+                                }
+                                DropdownMenu(
+                                    expanded = expandedCategory,
+                                    onDismissRequest = { expandedCategory = false }
+                                ) {
+                                    listOf(
+                                        "Food",
+                                        "Entertainment",
+                                        "Transportation",
+                                        "Shopping",
+                                        "Other",
+                                        "All"
+                                    ).forEach { category ->
+                                        DropdownMenuItem(
+                                            text = { Text(category) },
+                                            onClick = {
+                                                selectedCategoryFilter = category
+                                                expandedCategory = false
+                                                applyFilters()
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+
+                        }
+
                         LazyColumn {
                             items(expenses) { expense ->
                                 ExpenseItem(
@@ -89,12 +175,14 @@ fun HomeScreen(currentLocation: String) {
                                     onEdit = {
                                         expenseAmount = expense.amount.toString()
                                         selectedCategory = expense.title
-                                        customCategory = if (expense.title == "Other") expense.title else ""
+                                        customCategory =
+                                            if (expense.title == "Other") expense.title else ""
                                     }
                                 )
                             }
                         }
                     }
+
                     1 -> {
                         Button(
                             onClick = {
@@ -107,6 +195,7 @@ fun HomeScreen(currentLocation: String) {
                             Text("Location Detail")
                         }
                     }
+
                     2 -> {
                         SettingsTab(isDarkMode = isDarkMode, onDarkModeToggle = { isDarkMode = it })
                     }
