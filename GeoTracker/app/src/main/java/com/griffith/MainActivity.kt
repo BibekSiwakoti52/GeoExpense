@@ -93,9 +93,9 @@ class MainActivity : ComponentActivity() {
                     val jsonObject = JsonParser.parseString(responseBody).asJsonObject
                     Log.d("LocationInfo", "API Response: $responseBody")
                     val address = jsonObject.getAsJsonObject("address")
-                    val place = address.get("neighbourhood")?.asString ?: "Unknown Place"
-                    val state = address.get("state")?.asString ?: address.get("town")?.asString ?: "Unknown City"
-                    val country = address.get("country")?.asString ?: "Unknown Country"
+                    val place = address.get("neighbourhood")?.asString ?: ""
+                    val state = address.get("state")?.asString ?: address.get("town")?.asString ?: ""
+                    val country = address.get("country")?.asString ?: "Unknown"
 
                     val formattedLocation = "$place, $state, $country"
                     withContext(Dispatchers.Main) {

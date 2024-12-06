@@ -1,5 +1,6 @@
 package com.griffith
 
+import android.content.Intent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,7 +18,6 @@ import android.content.SharedPreferences
 import androidx.compose.ui.platform.LocalContext
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-
 
 @Composable
 fun HomeScreen(currentLocation: String) {
@@ -96,7 +96,16 @@ fun HomeScreen(currentLocation: String) {
                         }
                     }
                     1 -> {
-                        Location(location = currentLocation)
+                        Button(
+                            onClick = {
+                                val intent = Intent(context, LocationActivity::class.java)
+                                intent.putExtra("EXTRA_LOCATION", currentLocation)
+                                context.startActivity(intent)
+                            },
+                            modifier = Modifier.padding(16.dp)
+                        ) {
+                            Text("Location Detail")
+                        }
                     }
                     2 -> {
                         SettingsTab(isDarkMode = isDarkMode, onDarkModeToggle = { isDarkMode = it })
