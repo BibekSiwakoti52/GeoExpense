@@ -15,7 +15,6 @@ fun SettingsTab(
     var isDarkModeChecked by remember { mutableStateOf(isDarkMode) }
 
     Column(modifier = Modifier.padding(16.dp)) {
-        // Dark Mode Toggle
         Text("Theme", style = MaterialTheme.typography.titleMedium)
         Switch(
             checked = isDarkModeChecked,
@@ -32,7 +31,6 @@ fun SettingsTab(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Sign Out Button
         Button(onClick = { /* TODO: Add sign-out functionality */ }) {
             Text("Sign Out")
         }

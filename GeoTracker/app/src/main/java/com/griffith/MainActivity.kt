@@ -26,11 +26,10 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+//
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        geocoder = Geocoder(this, Locale.getDefault()) // Initialize geocoder
+        geocoder = Geocoder(this, Locale.getDefault())
 
-        // Request location permissions
         val requestPermissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestPermission()
         ) { isGranted: Boolean ->
@@ -52,7 +51,7 @@ class MainActivity : ComponentActivity() {
 
     private fun startLocationUpdates() {
         locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 10000)
-            .setMinUpdateIntervalMillis(5000) // fastest interval (5 seconds)
+            .setMinUpdateIntervalMillis(5000)
             .build()
 
         locationCallback = object : LocationCallback() {
@@ -60,7 +59,6 @@ class MainActivity : ComponentActivity() {
                 super.onLocationResult(locationResult)
                 val location = locationResult.lastLocation
                 if (location != null) {
-                    // Get location info asynchronously
                     getLocationInfo(location.latitude, location.longitude)
                 }
             }
@@ -70,18 +68,15 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun getLocationInfo(latitude: Double, longitude: Double) {
-        // Launch a coroutine to handle geocoding asynchronously
         CoroutineScope(Dispatchers.Main).launch {
             try {
                 val addresses = withContext(Dispatchers.IO) {
                     geocoder.getFromLocation(latitude, longitude, 1)
                 }
 
-                // Safely check if the address list is not null and not empty
                 if (!addresses.isNullOrEmpty()) {
                     val address = addresses[0]
 
-                    // Get the address parts from the geocoder result
                     val place = address.subLocality ?: "Unknown Place"
                     val city = address.locality ?: "Unknown City"
                     val country = address.countryName ?: "Unknown Country"
@@ -91,10 +86,9 @@ class MainActivity : ComponentActivity() {
 
                 } else {
                     currentLocation = "Location not found"
-                    Log.d("LocationInfo", currentLocation) // Log when location is not found
+                    Log.d("LocationInfo", currentLocation)
                 }
             } catch (e: Exception) {
-                // Handle any errors (e.g., network issues or geocoding failures)
                 Log.e("LocationInfo", "Failed to fetch location", e)
             }
         }

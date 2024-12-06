@@ -20,7 +20,6 @@ fun ExpenseInput(
     var expanded by remember { mutableStateOf(false) }
 
     Column {
-        // Amount Input
         TextField(
             value = expenseAmount,
             onValueChange = onAmountChange,
@@ -30,7 +29,6 @@ fun ExpenseInput(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Category Selector
         Box {
             TextButton(onClick = { expanded = !expanded }) {
                 Text("Category: $selectedCategory")
@@ -53,7 +51,6 @@ fun ExpenseInput(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Custom Category Input (when "Other" is selected)
         if (selectedCategory == "Other") {
             TextField(
                 value = customCategory,
@@ -65,7 +62,6 @@ fun ExpenseInput(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Save Button
         Button(onClick = onSave, modifier = Modifier.fillMaxWidth()) {
             Text("Save")
         }

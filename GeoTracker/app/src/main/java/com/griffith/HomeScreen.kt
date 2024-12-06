@@ -10,39 +10,49 @@ import androidx.compose.ui.unit.dp
 import com.griffith.components.SettingsTab
 import com.griffith.components.ExpenseItem
 import com.griffith.components.ExpenseInput
-import com.griffith.ui.theme.MyApplicationTheme // Import the theme
+import com.griffith.ui.theme.MyApplicationTheme
 import java.util.Date
+import android.content.Context
+import android.content.SharedPreferences
+import androidx.compose.ui.platform.LocalContext
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+
 
 @Composable
 fun HomeScreen(currentLocation: String) {
-    // State to track expenses
-    var expenses by remember { mutableStateOf(listOf(Expense("Groceries", 20.0, "Dublin", Date()))) }
+    val context = LocalContext.current
+    val sharedPreferences: SharedPreferences =
+        context.getSharedPreferences("expense_prefs", Context.MODE_PRIVATE)
 
-    // States for expense input
+    var expenses by remember {
+        mutableStateOf(loadExpenses(sharedPreferences))
+    }
+
     var expenseAmount by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("Other") }
     var customCategory by remember { mutableStateOf("") }
     var selectedTab by remember { mutableStateOf(0) }
     var isDarkMode by remember { mutableStateOf(false) }
 
-    // Function to save a new expense
     fun saveExpense() {
         val amount = expenseAmount.toDoubleOrNull()
         if (amount != null) {
-            val finalCategory = if (selectedCategory == "Other" && customCategory.isNotEmpty()) customCategory else selectedCategory
-            expenses = expenses + Expense(finalCategory, amount, currentLocation, Date())
-            // Reset input fields after saving
+            val finalCategory =
+                if (selectedCategory == "Other" && customCategory.isNotEmpty()) customCategory else selectedCategory
+            val newExpense = Expense(finalCategory, amount, currentLocation, Date())
+            expenses = expenses + newExpense
+            saveExpenses(sharedPreferences, expenses)
+
             expenseAmount = ""
             selectedCategory = "Other"
             customCategory = ""
         }
     }
 
-    // Wrap the entire screen in MyApplicationTheme to apply the theme
     MyApplicationTheme(darkTheme = isDarkMode) {
         Scaffold { paddingValues ->
             Column(modifier = Modifier.padding(paddingValues)) {
-                // Tab Row
                 TabRow(selectedTabIndex = selectedTab) {
                     Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 }) {
                         Text("Expenses", modifier = Modifier.padding(16.dp))
@@ -57,10 +67,8 @@ fun HomeScreen(currentLocation: String) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Display Content Based on Selected Tab
                 when (selectedTab) {
                     0 -> {
-                        // Expense Input Form
                         ExpenseInput(
                             expenseAmount = expenseAmount,
                             selectedCategory = selectedCategory,
@@ -68,12 +76,11 @@ fun HomeScreen(currentLocation: String) {
                             onAmountChange = { expenseAmount = it },
                             onCategoryChange = { selectedCategory = it },
                             onCustomCategoryChange = { customCategory = it },
-                            onSave = { saveExpense() } // Pass saveExpense as callback
+                            onSave = { saveExpense() }
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // List of Expenses
                         LazyColumn {
                             items(expenses) { expense ->
                                 ExpenseItem(
@@ -89,15 +96,26 @@ fun HomeScreen(currentLocation: String) {
                         }
                     }
                     1 -> {
-                        // Future Location Tab
                         Location(location = currentLocation)
                     }
                     2 -> {
-                        // Settings Tab
                         SettingsTab(isDarkMode = isDarkMode, onDarkModeToggle = { isDarkMode = it })
                     }
                 }
             }
         }
     }
+}
+
+private fun loadExpenses(sharedPreferences: SharedPreferences): List<Expense> {
+    val json = sharedPreferences.getString("expenses", null) ?: return emptyList()
+    val type = object : TypeToken<List<Expense>>() {}.type
+    return Gson().fromJson(json, type)
+}
+
+private fun saveExpenses(sharedPreferences: SharedPreferences, expenses: List<Expense>) {
+    val editor = sharedPreferences.edit()
+    val json = Gson().toJson(expenses)
+    editor.putString("expenses", json)
+    editor.apply()
 }

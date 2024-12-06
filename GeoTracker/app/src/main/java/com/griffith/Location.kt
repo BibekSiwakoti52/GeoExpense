@@ -25,5 +25,5 @@ fun Location(location: String) {
 @Composable
 @Preview(showBackground = true)
 fun PreviewLocation() {
-    Location(location = "Dublin") // Using Dublin as a dummy location until the real location is fetched from the GPS
+    Location(location = "Dublin")
 }

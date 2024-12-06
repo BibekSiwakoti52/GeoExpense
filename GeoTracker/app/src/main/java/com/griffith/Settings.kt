@@ -11,7 +11,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun Settings(onSignOut: () -> Unit) {
-    var isDarkMode by remember { mutableStateOf(false) } // Dark mode state
+    var isDarkMode by remember { mutableStateOf(false) }
 
     val backgroundColor = if (isDarkMode) Color.Black else Color.White
     val textColor = if (isDarkMode) Color.White else Color.Black
@@ -20,9 +20,8 @@ fun Settings(onSignOut: () -> Unit) {
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
-            .background(backgroundColor) // Apply background color
+            .background(backgroundColor)
     ) {
-        // Theme title text
         Text(
             text = "Theme",
             style = MaterialTheme.typography.titleMedium,
@@ -30,7 +29,6 @@ fun Settings(onSignOut: () -> Unit) {
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        // Dark Mode Toggle Switch
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -56,14 +54,6 @@ fun Settings(onSignOut: () -> Unit) {
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-
-        // Sign Out Button
-        TextButton(onClick = { onSignOut() }) {
-            Text(
-                text = "Sign Out",
-                color = Color.Red
-            )
-        }
     }
 }
 
