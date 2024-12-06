@@ -10,7 +10,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun Settings(onSignOut: () -> Unit) {
+fun Settings() {
     var isDarkMode by remember { mutableStateOf(false) }
 
     val backgroundColor = if (isDarkMode) Color.Black else Color.White
@@ -60,5 +60,5 @@ fun Settings(onSignOut: () -> Unit) {
 @Composable
 @Preview(showBackground = true)
 fun PreviewSettings() {
-    Settings(onSignOut = {})
+    Settings()
 }

@@ -10,7 +10,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.isSystemInDarkTheme
 
-// Dark color scheme
 private val DarkColorScheme = darkColorScheme(
     primary = Blue80,
     secondary = Green80,
@@ -21,7 +20,6 @@ private val DarkColorScheme = darkColorScheme(
     onSurface = OnSurfaceDark
 )
 
-// Light color scheme
 private val LightColorScheme = lightColorScheme(
     primary = Blue40,
     secondary = Green40,

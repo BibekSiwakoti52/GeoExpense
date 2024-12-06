@@ -1,9 +1,8 @@
 package com.griffith
 
+import android.Manifest
 import android.os.Bundle
 import android.os.Looper
-import android.widget.Toast
-import android.location.Geocoder
 import android.content.pm.PackageManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -15,20 +14,20 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import android.util.Log
-import java.util.*
+import androidx.core.app.ActivityCompat
+import com.google.gson.JsonParser
+import okhttp3.OkHttpClient
+import okhttp3.Request
 
 class MainActivity : ComponentActivity() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationRequest: LocationRequest
     private lateinit var locationCallback: LocationCallback
     private var currentLocation: String by mutableStateOf("Unknown")
-    private lateinit var geocoder: Geocoder
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        geocoder = Geocoder(this, Locale.getDefault())
 
         val requestPermissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestPermission()
@@ -38,10 +37,10 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        if (checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             startLocationUpdates()
         } else {
-            requestPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
+            requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         }
 
         setContent {
@@ -64,35 +63,58 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
         fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
     }
 
     private fun getLocationInfo(latitude: Double, longitude: Double) {
-        CoroutineScope(Dispatchers.Main).launch {
+        val client = OkHttpClient()
+        val url = "https://nominatim.openstreetmap.org/reverse?format=json&lat=$latitude&lon=$longitude&accept-language=en"
+
+        CoroutineScope(Dispatchers.IO).launch {
             try {
-                val addresses = withContext(Dispatchers.IO) {
-                    geocoder.getFromLocation(latitude, longitude, 1)
-                }
+                val request = Request.Builder()
+                    .url(url)
+                    .header("User-Agent", "Expense Manager")
+                    .build()
 
-                if (!addresses.isNullOrEmpty()) {
-                    val address = addresses[0]
+                val response = client.newCall(request).execute()
+                val responseBody = response.body?.string()
+                if (!responseBody.isNullOrEmpty()) {
+                    val jsonObject = JsonParser.parseString(responseBody).asJsonObject
+                    Log.d("LocationInfo", "API Response: $responseBody")
+                    val address = jsonObject.getAsJsonObject("address")
+                    val place = address.get("neighbourhood")?.asString ?: "Unknown Place"
+                    val state = address.get("state")?.asString ?: address.get("town")?.asString ?: "Unknown City"
+                    val country = address.get("country")?.asString ?: "Unknown Country"
 
-                    val place = address.subLocality ?: "Unknown Place"
-                    val city = address.locality ?: "Unknown City"
-                    val country = address.countryName ?: "Unknown Country"
-
-                    val formattedLocation = "$place, $city, $country"
-                    currentLocation = formattedLocation
-
+                    val formattedLocation = "$place, $state, $country"
+                    withContext(Dispatchers.Main) {
+                        currentLocation = formattedLocation
+                    }
                 } else {
-                    currentLocation = "Location not found"
-                    Log.d("LocationInfo", currentLocation)
+                    withContext(Dispatchers.Main) {
+                        currentLocation = "Location not found"
+                    }
                 }
             } catch (e: Exception) {
                 Log.e("LocationInfo", "Failed to fetch location", e)
+                withContext(Dispatchers.Main) {
+                    currentLocation = "Failed to fetch location"
+                }
             }
         }
     }
+
     override fun onDestroy() {
         super.onDestroy()
         fusedLocationClient.removeLocationUpdates(locationCallback)

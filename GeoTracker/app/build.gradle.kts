@@ -57,4 +57,6 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.play.services.location)
     implementation(libs.gson)
+    implementation(libs.okhttp)
+    implementation(libs.gson.v2101)
 }
